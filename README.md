@@ -41,6 +41,8 @@ If you'd like to extend this demo or maintain a fork of it, read our
 
 ## Quick start
 
+For this fork's manual deployment onto the shared ReliBank/AKS demo cluster, see [deploy/README.md](./deploy/README.md) and the **OpenTelemetry Astronomy Shop on shared AKS** workflow. The workflow is app-only; cluster lifecycle remains in the separate infrastructure repository.
+
 You can be up and running with the demo in a few minutes. Check out the docs for
 your preferred deployment method:
 

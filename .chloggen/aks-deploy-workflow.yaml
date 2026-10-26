@@ -1,0 +1,9 @@
+# Copyright The OpenTelemetry Authors
+# SPDX-License-Identifier: Apache-2.0
+change_type: enhancement
+
+component: repo
+
+note: Add a fork-local manual workflow to deploy the Astronomy Shop to an existing AKS lab cluster.
+
+issues: [1]

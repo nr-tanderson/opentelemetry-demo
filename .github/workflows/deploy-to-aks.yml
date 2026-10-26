@@ -1,0 +1,64 @@
+# Copyright The OpenTelemetry Authors
+# SPDX-License-Identifier: Apache-2.0
+name: OpenTelemetry Astronomy Shop on shared AKS
+
+on:
+  workflow_dispatch:
+    inputs:
+      operation:
+        description: Deploy this fork's commit or uninstall only the Astronomy Shop
+        type: choice
+        default: deploy
+        options: [deploy, uninstall]
+      enable_monitoring:
+        description: Enable New Relic only after separately configuring a new lab key
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+concurrency:
+  group: shared-aks-opentelemetry-demo
+  cancel-in-progress: false
+
+jobs:
+  operate:
+    name: Deploy or uninstall Astronomy Shop
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read  # Required by actions/checkout.
+      id-token: write  # Required by azure/login for short-lived OIDC authentication.
+    environment: lab-application
+    env:
+      TFSTATE_STORAGE_ACCOUNT: ${{ vars.TFSTATE_STORAGE_ACCOUNT }}
+      TFSTATE_CONTAINER: ${{ vars.TFSTATE_CONTAINER }}
+      TFSTATE_KEY: ${{ vars.TFSTATE_KEY }}
+      AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+      AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+      AZURE_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+      OTEL_OPERATION: ${{ inputs.operation }}
+      MONITORING_ENABLED: ${{ inputs.enable_monitoring && 'true' || 'false' }}
+      NEW_RELIC_LICENSE_KEY: ${{ inputs.enable_monitoring && secrets.LAB_NR_LICENSE_KEY || '' }}
+      NEW_RELIC_OTLP_ENDPOINT: ${{ vars.NEW_RELIC_OTLP_ENDPOINT }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: azure/login@a641126d1b8aa4d1fa005f4f92df94a3a4c4c906  # v3.1.0
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+      - uses: azure/setup-helm@9bc31f4ebc9c6b171d7bfbaa5d006ae7abdb4310  # v5.0.1
+        with:
+          version: v3.19.0
+      - uses: azure/setup-kubectl@bda439f5f36b99b262ebdcd3613869bddb064c8e  # v5.2.0
+      - uses: azure/use-kubelogin@0ce7c36141aa27d4934872cf00b0120804c98a29  # v1.3
+        with:
+          kubelogin-version: v0.2.10
+      - name: Validate optional monitoring credential
+        if: ${{ inputs.enable_monitoring }}
+        run: ': "${NEW_RELIC_LICENSE_KEY:?Configure a new LAB_NR_LICENSE_KEY before opting in}"'
+      - name: Operate under the shared lab lock
+        run: bash scripts/lab-lock.sh bash scripts/deploy-aks.sh
