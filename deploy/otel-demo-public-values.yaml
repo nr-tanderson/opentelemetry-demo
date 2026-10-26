@@ -1,0 +1,6 @@
+components:
+  frontend-proxy:
+    service:
+      type: LoadBalancer
+      annotations:
+        service.beta.kubernetes.io/azure-additional-resource-tags: OWNER=TANDERSON,PROJECT=nr-azure-demo-opentelemetry

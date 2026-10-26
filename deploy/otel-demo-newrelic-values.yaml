@@ -1,0 +1,41 @@
+opentelemetry-collector:
+  extraEnvs:
+    - name: NEW_RELIC_LICENSE_KEY
+      valueFrom:
+        secretKeyRef:
+          name: newrelic-license
+          key: license-key
+  config:
+    exporters:
+      otlphttp/newrelic:
+        endpoint: ${NEW_RELIC_OTLP_ENDPOINT}
+        headers:
+          api-key: ${env:NEW_RELIC_LICENSE_KEY}
+    service:
+      pipelines:
+        traces:
+          exporters: [span_metrics, otlphttp/newrelic]
+        metrics:
+          exporters: [otlphttp/newrelic]
+        logs:
+          exporters: [otlphttp/newrelic]
+
+jaeger:
+  enabled: false
+
+prometheus:
+  enabled: false
+
+grafana:
+  enabled: false
+
+opensearch:
+  enabled: false
+
+components:
+  load-generator:
+    envOverrides:
+      - name: LOCUST_USERS
+        value: "2"
+      - name: LOCUST_BROWSER_TRAFFIC_ENABLED
+        value: "false"
