@@ -17,7 +17,6 @@ on:
 
 permissions:
   contents: read
-  id-token: write
 
 concurrency:
   group: shared-aks-opentelemetry-demo
@@ -25,7 +24,11 @@ concurrency:
 
 jobs:
   operate:
+    name: Deploy or uninstall Astronomy Shop
     runs-on: ubuntu-latest
+    permissions:
+      contents: read  # Required by actions/checkout.
+      id-token: write  # Required by azure/login for short-lived OIDC authentication.
     environment: lab-application
     env:
       TFSTATE_STORAGE_ACCOUNT: ${{ vars.TFSTATE_STORAGE_ACCOUNT }}
