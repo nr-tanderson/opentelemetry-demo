@@ -1,4 +1,10 @@
-#!/usr/bin/env bash
+#!/bin/sh
+# Copyright The OpenTelemetry Authors
+# SPDX-License-Identifier: Apache-2.0
+# shellcheck shell=bash
+if [ -z "${BASH_VERSION:-}" ]; then
+  exec bash "$0" "$@"
+fi
 set -euo pipefail
 
 connection=$(mktemp)
